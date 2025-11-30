@@ -1,0 +1,187 @@
+/* ================================
+   LOGIN PAGE — FULL, FIXED, RESPONSIVE
+   ================================ */
+
+/* Reset kecil + konsistensi sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Variabel jarak */
+:root{
+  --page-pad: 16px;     /* padding minimal sisi kiri/kanan */
+  --page-pad-lg: 24px;  /* padding di layar kecil */
+  --radius: 18px;
+  --brand: #6c63ff;
+  --brand-strong: #4f46e5;
+  --bg: #eef1fd;
+  --card-bg: #fff;
+  --text: #222;
+  --muted: #6c757d;
+  --field-bg: #f8f9fa;
+  --field-border: #dbe2ef;
+  --shadow: 0 4px 24px rgba(80,80,180,0.08);
+}
+
+/* Halaman dasar */
+body {
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* FIX: ruang kiri–kanan + hormati safe area iOS */
+  padding-inline:
+    max(var(--page-pad), env(safe-area-inset-left))
+    max(var(--page-pad), env(safe-area-inset-right));
+}
+
+/* Kontainer kartu login */
+.login-container {
+  width: min(420px, 100%);
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 38px 32px 32px 32px;
+  margin-inline: auto;       /* jaga tetap center */
+  margin-bottom: 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Logo kecil */
+.login-logo {
+  width: 64px;
+  height: 64px;
+  background: var(--brand);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  font-size: 2.2em;
+  color: #fff;
+}
+
+/* Judul & subjudul */
+.login-title {
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  color: var(--muted);
+  font-size: 1.05em;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+/* Pesan alert (opsional, kalau dipakai) */
+.alert {
+  width: 100%;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 14px 0;
+  text-align: center;
+}
+
+/* Form */
+.login-form {
+  width: 100%;
+}
+
+.login-form label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Field */
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 10px 0 18px 0;
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  font-size: 1em;
+  background: var(--field-bg);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+/* Fokus jelas (aksesibilitas) */
+.login-form input:focus {
+  border: 1.5px solid var(--brand);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+}
+
+/* Tombol */
+.login-form button {
+  width: 100%;
+  padding: 12px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s, transform 0.02s;
+}
+
+.login-form button:hover {
+  background: var(--brand-strong);
+}
+
+.login-form button:active {
+  transform: translateY(1px);
+}
+
+/* Link kecil (register dsb.) */
+a.link {
+  color: var(--brand-strong);
+  text-decoration: none;
+  font-weight: 600;
+}
+a.link:hover {
+  text-decoration: underline;
+}
+
+/* Responsif: tambah napas di layar kecil & kencangkan padding kontainer */
+@media (max-width: 600px) {
+  body {
+    padding-inline:
+      max(var(--page-pad-lg), env(safe-area-inset-left))
+      max(var(--page-pad-lg), env(safe-area-inset-right));
+  }
+  .login-container {
+    padding: 24px 18px 22px 18px; /* FIX: kiri–kanan lebih lega di mobile */
+    margin-bottom: 28px;
+  }
+}
+
+/* Preferensi pengguna: kurangi animasi */
+@media (prefers-reduced-motion: reduce) {
+  .login-form input[type="text"],
+  .login-form input[type="email"],
+  .login-form input[type="password"],
+  .login-form button {
+    transition: none;
+  }
+}

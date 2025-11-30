@@ -1,0 +1,111 @@
+/* Style khusus halaman register */
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 40px;
+}
+.container {
+    max-width: 400px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 30px 25px;
+    margin-bottom: 40px;
+}
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+}
+input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 20px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    background: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+button:hover {
+    background: #357ab8;
+}
+.link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #4a90e2;
+    text-decoration: none;
+}
+.link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Mobile */
+@media (max-width: 480px) {
+    body {
+        padding-top: 10px;
+    }
+    .container {
+        max-width: 98vw;
+        padding: 18px 8px;
+        margin-bottom: 18px;
+        border-radius: 7px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 14px;
+    }
+    input[type="text"], input[type="email"], input[type="password"] {
+        padding: 8px;
+        margin: 8px 0 14px 0;
+        font-size: 15px;
+    }
+    button {
+        padding: 9px;
+        font-size: 15px;
+        margin-bottom: 7px;
+    }
+    .link {
+        font-size: 14px;
+        margin-top: 7px;
+    }
+}
+
+@media (max-width: 380px) {
+    .container {
+        padding: 10px 3px;
+        border-radius: 5px;
+    }
+    h2 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    input[type="text"], input[type="email"], input[type="password"] {
+        padding: 6px;
+        font-size: 13px;
+    }
+    button {
+        padding: 7px;
+        font-size: 13px;
+    }
+    .link {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,245 @@
+/* Card utama absensi hari ini */
+.absensi-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 24px 32px;
+    margin-top: 24px;
+}
+.card-title {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* Tombol */
+.btn-export,
+.btn-back,
+.btn-absen {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-export {
+    background: #6c63ff;
+    color: #fff;
+    margin-right: 8px;
+}
+.btn-export:hover {
+    background: #4f46e5;
+}
+.btn-back {
+    background: #f3f4fa;
+    color: #212529;
+}
+.btn-back:hover {
+    background: #e9ecef;
+}
+.btn-absen {
+    background: #6c63ff;
+    color: #fff;
+    margin-right: 8px;
+}
+.btn-absen:hover {
+    background: #4f46e5;
+}
+.btn-edit {
+    background: #38b000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 4px;
+    transition: background 0.2s;
+}
+.btn-edit:hover {
+    background: #218838;
+}
+.btn-hapus {
+    background: #e63946;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-hapus:hover {
+    background: #b71c1c;
+}
+
+/* Info status */
+.absensi-status-info span {
+    font-size: 1em;
+    margin-right: 12px;
+}
+
+/* Table wrapper biar bisa scroll */
+.table-container {
+    max-height: 500px;   /* batas tinggi */
+    overflow-y: auto;    /* bikin scroll vertikal */
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    margin-top: 12px;
+}
+
+/* Table absensi */
+.absensi-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    overflow: hidden;
+    min-width: 700px; /* biar tabel gak mepet kalau kolom banyak */
+}
+.absensi-table th, .absensi-table td {
+    padding: 12px 8px;
+    text-align: left;
+    font-size: 1em;
+    border-bottom: 1px solid #e9ecef;
+}
+.absensi-table th {
+    background: #f3f4fa;
+    color: #212529;
+    font-weight: bold;
+}
+.absensi-table td {
+    background: #fff;
+}
+
+/* Badge status */
+.badge {
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+    display: inline-block;
+    white-space: nowrap;
+}
+.status-hadir {
+    background: #d1fae5;
+    color: #2d6a4f;
+}
+.status-terlambat {
+    background: #fff3cd;
+    color: #856404;
+}
+.status-tidak-hadir {
+    background: #ffd6d6;
+    color: #9d0208;
+}
+
+/* Icon aksi */
+.aksi {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    vertical-align: middle;
+    background-size: 18px 18px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+.aksi-view {
+    background-image: url('../assets/view.svg');
+}
+.aksi-edit {
+    background-image: url('../assets/edit.svg');
+}
+.aksi:hover {
+    opacity: 1;
+}
+
+/* Modal Absen */
+.modal-absen {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.25);
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background: #fff;
+    margin: 80px auto;
+    padding: 32px 28px 24px 28px;
+    border-radius: 16px;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    position: relative;
+    text-align: left;
+}
+.modal-content h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+.modal-content label {
+    font-weight: 500;
+    color: #212529;
+}
+.modal-content select,
+.modal-content input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 14px;
+    font-size: 1em;
+}
+.modal-content .btn-primary {
+    width: 100%;
+    margin-top: 8px;
+}
+.close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    font-size: 1.6em;
+    color: #6c757d;
+    cursor: pointer;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+.close:hover {
+    color: #e63946;
+}
+
+/* Responsif */
+@media (max-width: 900px) {
+    .absensi-card {
+        padding: 16px;
+    }
+    .absensi-table {
+        font-size: 0.9em;
+    }
+}
+@media (max-width: 600px) {
+    .modal-content {
+        max-width: 95vw;
+        padding: 16px 12px;
+    }
+    .absensi-table {
+        font-size: 0.85em;
+    }
+}

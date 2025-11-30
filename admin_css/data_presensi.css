@@ -1,0 +1,46 @@
+/* CSS khusus data presensi admin */
+/* Tambahkan style khusus data presensi di sini */
+
+/* Style khusus data presensi: filter, tabel, badge status */
+.filter-section {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.badge {
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-weight: bold;
+    display: inline-block;
+}
+.status-hadir {
+    background: #d1fae5;
+    color: #2d6a4f;
+}
+.status-izin {
+    background: #fff3cd;
+    color: #856404;
+}
+.status-sakit {
+    background-color: #4cc9f0; 
+    color: var(--gray-900); 
+}
+.status-alfa {
+    background: #ffd6d6;
+    color: #9d0208;
+}
+.table td span[style*="cursor:pointer"] {
+    transition: color 0.2s;
+}
+.table td span[style*="cursor:pointer"]:hover {
+    color: #212529 !important;
+}
+.main-wrapper {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: #f8f9fa;
+    width: calc(100% - 250px);
+}
