@@ -1,26 +1,21 @@
 <?php
-// --- AKTIFKAN INI UNTUK MELIHAT ERROR ---
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 session_start();
 date_default_timezone_set('Asia/Makassar');
 include '../koneksi.php';
 
-// --- PASTIKAN KONEKSI BERHASIL ---
+/* Cek koneksi database */
 if (!$conn) {
     die("Koneksi database gagal! Periksa file koneksi.php.");
 }
 
-// Cek login
+/* Cek apakah admin sudah login */
 if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
     header("Location: ../index.php");
     exit;
 }
 
-// Ambil tema dari pengaturan
-$tema = 'light'; // default
+/* Ambil pengaturan tema (light/dark mode) */
+$tema = 'light';
 $sql_tema = "SELECT tema FROM pengaturan LIMIT 1";
 $result_tema = mysqli_query($conn, $sql_tema);
 if ($result_tema && mysqli_num_rows($result_tema) > 0) {
@@ -34,7 +29,7 @@ $namaLogin = $_SESSION['nama_lengkap'] ?? $usernameLogin;
 $tanggal = date('Y-m-d');
 $jam = date('H:i:s');
 
-// --- PROSES APPROVE/REJECT IZIN CHECKOUT ---
+/* Proses approve/reject checkout lebih awal */
 if (isset($_GET['approve_checkout'])) {
     $id = $_GET['approve_checkout'];
     $stmt = $conn->prepare("SELECT * FROM izin_checkout WHERE id = ?");
@@ -95,7 +90,7 @@ if (isset($_GET['reject_checkout'])) {
     header("Location: absensi.php"); exit;
 }
 
-// --- PROSES APPROVE/REJECT IZIN ---
+/* Proses approve/reject izin */
 if (isset($_GET['approve_izin'])) {
     $id = $_GET['approve_izin'];
     $stmt = $conn->prepare("UPDATE izin SET status='Disetujui' WHERE id=?");
@@ -113,7 +108,7 @@ if (isset($_GET['reject_izin'])) {
     header("Location: absensi.php"); exit;
 }
 
-// --- PROSES APPROVE/REJECT SAKIT ---
+/* Proses approve/reject sakit */
 if (isset($_GET['approve_sakit'])) {
     $id = $_GET['approve_sakit'];
     $stmt = $conn->prepare("UPDATE sakit SET status='Disetujui' WHERE id=?");
@@ -131,7 +126,7 @@ if (isset($_GET['reject_sakit'])) {
     header("Location: absensi.php"); exit;
 }
 
-// --- PROSES ABSEN ---
+/* Proses absen manual (clock in/out, izin, sakit) */
 if (isset($_POST['absen'])) {
     $username = isset($_POST['username']) ? $_POST['username'] : $usernameLogin;
     $status = $_POST['status'];
@@ -166,7 +161,7 @@ if (isset($_POST['absen'])) {
     header('Location: absensi.php'); exit;
 }
 
-// --- HAPUS ABSENSI ---
+/* Hapus data absensi */
 if (isset($_GET['hapus_absensi']) && is_numeric($_GET['hapus_absensi'])) {
     $id = intval($_GET['hapus_absensi']);
     $stmt = $conn->prepare("DELETE FROM absensi WHERE id=?");
@@ -176,11 +171,13 @@ if (isset($_GET['hapus_absensi']) && is_numeric($_GET['hapus_absensi'])) {
     header('Location: absensi.php'); exit;
 }
 
-// --- AMBIL DATA UNTUK DITAMPILKAN ---
+/* Ambil data untuk ditampilkan di halaman */
+/* Data absensi hari ini */
 $stmt = $conn->prepare("SELECT * FROM absensi WHERE tanggal = CURDATE() ORDER BY id ASC");
 $stmt->execute();
 $absensi_today = $stmt->get_result();
 
+/* Data checkout pending (menunggu approval) */
 $stmt = $conn->prepare("SELECT ic.*, u.nama_lengkap FROM izin_checkout ic JOIN users u ON ic.username = u.username WHERE ic.tanggal = CURDATE() AND ic.status = 'Pending' ORDER BY ic.id DESC");
 $stmt->execute();
 $checkout_pending = $stmt->get_result();

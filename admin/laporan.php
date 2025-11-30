@@ -1,14 +1,15 @@
 <?php
+error_reporting(E_ERROR | E_PARSE);
 session_start();
 include '../koneksi.php';
 
-// ===== CEK LOGIN =====
+/* Cek apakah admin sudah login */
 if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
     header("Location: ../index.php");
     exit;
 }
 
-// Ambil tema dari pengaturan
+/* Ambil pengaturan tema (light/dark mode) */
 $tema = 'light'; // default
 $sql_tema = "SELECT tema FROM pengaturan LIMIT 1";
 $result_tema = mysqli_query($conn, $sql_tema);
@@ -21,7 +22,7 @@ $role          = $_SESSION['role'] ?? 'user';
 $usernameLogin = $_SESSION['username'] ?? '';
 $namaLogin     = $_SESSION['nama_lengkap'] ?? $usernameLogin;
 
-// ===== QUERY LAPORAN =====
+/*Query ini menghitung total   Hadir, Terlambat, Izin, Sakit, Alpha untuk setiap user yang terdaftar */
 $query = "
     SELECT 
         u.username, u.nama_lengkap, u.role,
@@ -42,6 +43,7 @@ $query = "
 ";
 $result = mysqli_query($conn, $query) or die("Query gagal: " . mysqli_error($conn));
 
+/* Simpan hasil query ke array dan hitung total */
 $laporan = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $row['hadir']      = (int)$row['hadir'];
@@ -137,9 +139,9 @@ while ($row = mysqli_fetch_assoc($result)) {
     </main>
   </div>
 
-  <!-- SCRIPT -->
+  <!--JAVASCRIPT - Sidebar & Export Functions-->
   <script>
-    // Sidebar
+    /*Toggle sidebar untuk mobile*/
     document.addEventListener('DOMContentLoaded', function(){
       const s = document.getElementById('sidebar');
       const o = document.getElementById('sidebarOverlay');
@@ -148,7 +150,7 @@ while ($row = mysqli_fetch_assoc($result)) {
       o.addEventListener('click', ()=>{ s.classList.remove('active'); o.classList.remove('active'); });
     });
 
-    // ===== EXPORT CSV =====
+    /* EXPORT KE CSV */
     (function(){
       const btnCSV = document.getElementById('btnExport');
       const table = document.getElementById('laporanTable');
@@ -172,7 +174,7 @@ while ($row = mysqli_fetch_assoc($result)) {
       });
     })();
 
-    // ===== EXPORT EXCEL =====
+    /* EXPORT KE EXCEL */
     (function(){
       const btnExcel = document.getElementById('btnExportExcel');
       const table = document.getElementById('laporanTable');
@@ -180,17 +182,17 @@ while ($row = mysqli_fetch_assoc($result)) {
       btnExcel.addEventListener('click', () => {
         const wb = XLSX.utils.table_to_book(table, {sheet: 'Laporan Absensi'});
 
-        // Generate Excel file content
+        /* Generate Excel file content */
         const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'binary'});
 
-        // Create Blob object with Excel content
+        /* Create Blob object with Excel content */
         const blob = new Blob([s2ab(wbout)], {type: 'application/octet-stream'});
 
-        // Use FileSaver.js to trigger file download
+        /* Use FileSaver.js to trigger file download */
         saveAs(blob, 'laporan_absensi.xlsx');
       });
 
-      // Helper function to convert string to array buffer
+      /* Helper function to convert string to array buffer */
       function s2ab(s) {
         const buf = new ArrayBuffer(s.length);
         const view = new Uint8Array(buf);

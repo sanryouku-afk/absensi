@@ -1,17 +1,18 @@
 <?php
 session_start();
-// Set timezone ke WITA (Asia/Makassar) untuk Kalimantan Selatan
-date_default_timezone_set('Asia/Makassar');
+date_default_timezone_set('Asia/Makassar'); // Set timezone WITA untuk Kalimantan Selatan
 include '../koneksi.php';
 
+// Cek apakah user sudah login
 if (!isset($_SESSION['username'])) {
     header("Location: ../login.php");
     exit();
 }
 
- $username = $_SESSION['username'];
- $nama_lengkap = $_SESSION['nama_lengkap'] ?? $username;
- $message = "";
+// Ambil data user dari session
+$username = $_SESSION['username'];
+$nama_lengkap = $_SESSION['nama_lengkap'] ?? $username;
+$message = "";
 
 // Fungsi untuk membuat tabel alpha_checks jika belum ada
 function createAlphaChecksTable($conn) {
@@ -38,12 +39,14 @@ function createIzinCheckoutTable($conn) {
     return mysqli_query($conn, $query);
 }
 
-// Pastikan tabel izin_checkout ada
+// Pastikan tabel izin_checkout ada (untuk checkout lebih awal)
 if (!createIzinCheckoutTable($conn)) {
     $message = '<div class="error">Gagal membuat tabel izin_checkout: ' . mysqli_error($conn) . '</div>';
 }
 
-// Fungsi untuk mengecek dan menambahkan status Alpha untuk hari yang tidak ada absensi
+/* Fungsi untuk auto-check Alpha
+ * Jika user belum absen sampai jam 16:00, otomatis tandai sebagai Alpha
+ */
 function checkAlphaStatus($conn, $username, $nama_lengkap) {
     // Pastikan tabel alpha_checks ada
     if (!createAlphaChecksTable($conn)) {
@@ -84,7 +87,9 @@ function checkAlphaStatus($conn, $username, $nama_lengkap) {
     return '';
 }
 
-// Fungsi untuk mengecek status izin checkout yang sudah disetujui
+/* Fungsi untuk update status checkout yang sudah di-ACC admin
+ * Kalau admin approve, status absensi otomatis jadi 'Hadir'
+ */
 function checkApprovedCheckout($conn, $username) {
     // Cek apakah ada izin checkout yang sudah disetujui hari ini
     $cekApproved = mysqli_query($conn, "SELECT * FROM izin_checkout 
@@ -122,7 +127,9 @@ if (!empty($alphaCheckResult)) {
 // Panggil fungsi untuk mengecek checkout yang sudah disetujui
 checkApprovedCheckout($conn, $username);
 
-// Proses Clock In
+/* ========================================
+ * PROSES CLOCK IN
+ * ======================================== */
 if (isset($_POST['clock_in'])) {
     $u = mysqli_real_escape_string($conn, $username);
     $nama_esc = mysqli_real_escape_string($conn, $nama_lengkap);
@@ -135,7 +142,7 @@ if (isset($_POST['clock_in'])) {
         $current_hour = (int)date('H');
         $current_minute = (int)date('i');
         
-        // Tentukan status berdasarkan waktu
+        // Cek apakah tepat waktu atau terlambat (batas jam 08:00)
         if ($current_hour < 8 || ($current_hour == 8 && $current_minute == 0)) {
             $status = 'Hadir';
             $keterangan = 'Tepat Waktu';
@@ -156,7 +163,9 @@ if (isset($_POST['clock_in'])) {
     }
 }
 
-// Proses Clock Out
+/* ========================================
+ * PROSES CLOCK OUT
+ * ======================================== */
 if (isset($_POST['clock_out'])) {
     $keterangan = mysqli_real_escape_string($conn, $_POST['keterangan'] ?? '');
     $cek = mysqli_query($conn, "SELECT * FROM absensi 
@@ -170,7 +179,7 @@ if (isset($_POST['clock_out'])) {
         $current_time = date('H:i:s');
         $current_hour = (int)date('H');
         
-        // Jika belum jam 16:00, simpan ke izin_checkout dan update status absensi
+        // Checkout sebelum jam 16:00 harus minta izin ke admin dulu
         if ($current_hour < 16) {
             // CEK: Apakah user sudah mengirim permintaan checkout hari ini?
             $cekCheckout = mysqli_query($conn, "SELECT id FROM izin_checkout 
@@ -201,7 +210,7 @@ if (isset($_POST['clock_out'])) {
                 }
             }
         } else {
-            // Jika sudah jam 16:00 atau lebih, lakukan checkout normal
+            // Kalau sudah lewat jam 16:00, langsung checkout aja
             $query = "UPDATE absensi SET clock_out = '$current_time', keterangan = '$keterangan', status='Selesai'
                       WHERE username='" . mysqli_real_escape_string($conn, $username) . "' AND tanggal = CURDATE()";
             if (mysqli_query($conn, $query)) {
@@ -215,7 +224,9 @@ if (isset($_POST['clock_out'])) {
     }
 }
 
-// Proses Izin
+/* ========================================
+ * PROSES PENGAJUAN IZIN
+ * ======================================== */
 if (isset($_POST['izin'])) {
     $u = mysqli_real_escape_string($conn, $username);
     $nama_esc = mysqli_real_escape_string($conn, $nama_lengkap);
@@ -244,7 +255,9 @@ if (isset($_POST['izin'])) {
     }
 }
 
-// Proses Sakit
+/* ========================================
+ * PROSES LAPOR SAKIT
+ * ======================================== */
 if (isset($_POST['sakit'])) {
     $u = mysqli_real_escape_string($conn, $username);
     $nama_esc = mysqli_real_escape_string($conn, $nama_lengkap);
@@ -273,8 +286,12 @@ if (isset($_POST['sakit'])) {
     }
 }
 
-// Ambil data absensi user untuk statistik dengan query yang lebih akurat
-// Total Kehadiran - semua yang statusnya Hadir (baik sudah check out maupun belum)
+/* ========================================
+ * QUERY STATISTIK UNTUK DASHBOARD
+ * Ambil semua data untuk ditampilkan di kartu statistik
+ * ======================================== */
+
+// Hitung total hari hadir
  $totalHadir = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                   WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                   AND status='Hadir'");
@@ -285,7 +302,7 @@ if ($totalHadir) {
     $totalKehadiran = 0;
 }
 
-// Total Terlambat - semua yang statusnya Terlambat (baik sudah check out maupun belum)
+// Hitung total hari terlambat
  $totalTerlambat = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                       WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                       AND status='Terlambat'");
@@ -296,7 +313,7 @@ if ($totalTerlambat) {
     $totalKeterlambatan = 0;
 }
 
-// Total Tanpa Kehadiran (Alpha)
+// Hitung total alpha (tanpa kehadiran)
  $totalAlpha = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                   WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                   AND status='Alpha'");
@@ -307,7 +324,7 @@ if ($totalAlpha) {
     $totalTanpaKehadiran = 0;
 }
 
-// Total Izin yang disetujui
+// Hitung total izin yang sudah disetujui
  $totalIzin = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                  WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                  AND status='Izin'");
@@ -318,7 +335,7 @@ if ($totalIzin) {
     $totalIzin = 0;
 }
 
-// Total Sakit yang disetujui
+// Hitung total sakit yang sudah disetujui
  $totalSakit = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                   WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                   AND status='Sakit'");
@@ -329,7 +346,7 @@ if ($totalSakit) {
     $totalSakit = 0;
 }
 
-// Total Selesai - yang statusnya Selesai (setelah checkout atau disetujui admin)
+// Hitung total yang sudah selesai (sudah checkout)
  $totalSelesai = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                     WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                     AND status='Selesai'");
@@ -340,7 +357,7 @@ if ($totalSelesai) {
     $totalSelesai = 0;
 }
 
-// Hitung total hari kerja (hanya hari yang statusnya sudah final)
+// Hitung total hari kerja keseluruhan
  $totalHariKerja = mysqli_query($conn, "SELECT COUNT(*) as total FROM absensi 
                                       WHERE username='" . mysqli_real_escape_string($conn, $username) . "' 
                                       AND status IN ('Hadir', 'Terlambat', 'Alpha', 'Izin', 'Sakit', 'Selesai')");

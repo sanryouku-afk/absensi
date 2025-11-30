@@ -1,16 +1,17 @@
 <?php
+error_reporting(E_ERROR | E_PARSE);
 session_start();
 include '../koneksi.php';
 $message = '';
 
-// Cek login
+/* Cek apakah admin sudah login */
 if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
     header("Location: ../index.php");
     exit;
 }
 
-// Ambil tema dari pengaturan
-$tema = 'light'; // default
+/*Ambil tema dari pengaturan*/
+$tema = 'light'; /*default*/
 $sql_tema = "SELECT tema FROM pengaturan LIMIT 1";
 $result_tema = mysqli_query($conn, $sql_tema);
 if ($result_tema && mysqli_num_rows($result_tema) > 0) {
@@ -22,9 +23,9 @@ $role         = $_SESSION['role'] ?? 'user';
 $usernameLogin= $_SESSION['username'] ?? '';
 $namaLogin    = $_SESSION['nama_lengkap'] ?? $usernameLogin;
 
-/* ================== ACTIONS ================== */
+/* PROSES AKSI USER (Tambah, Edit, Hapus, ACC)*/
 
-// Tambah User
+/* Proses tambah user baru*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_user'])) {
     $username     = mysqli_real_escape_string($conn, trim($_POST['username']));
     $nama_lengkap = mysqli_real_escape_string($conn, trim($_POST['nama_lengkap']));
@@ -43,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_user'])) {
     }
 }
 
-// Edit User
+/* Proses edit/update data user*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_user'])) {
     $id           = intval($_POST['id']);
     $username     = mysqli_real_escape_string($conn, trim($_POST['username']));
@@ -73,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_user'])) {
     }
 }
 
-// Hapus User
+/* Proses hapus user*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_user'])) {
     $id  = intval($_POST['hapus_user']);
     $sql = "DELETE FROM users WHERE id=$id";
@@ -84,12 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_user'])) {
     }
 }
 
-// ACC/Tolak user pending
+/* Proses ACC user yang pending (approve registrasi)*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acc_user'])) {
     $id = intval($_POST['acc_user']);
     mysqli_query($conn, "UPDATE users SET status='aktif' WHERE id=$id");
     $message = '<div class="notification success">User berhasil di-ACC!</div>';
 }
+/* Proses tolak user yang pending (hapus)*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tolak_user'])) {
     $id = intval($_POST['tolak_user']);
     mysqli_query($conn, "DELETE FROM users WHERE id=$id");
@@ -164,6 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tolak_user'])) {
                         </thead>
                         <tbody>
                         <?php
+                        /*Ambil semua data user dari database*/
                         $sql = "SELECT * FROM users ORDER BY id ASC";
                         $result = mysqli_query($conn, $sql);
                         $no = 1;
@@ -271,7 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tolak_user'])) {
     </div>
 
     <script>
-    // Toggle sidebar
+    /*Toggle sidebar*/
     document.addEventListener('DOMContentLoaded', function() {
       const hamburger = document.getElementById('hamburger');
       const sidebar   = document.getElementById('sidebar');
@@ -315,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tolak_user'])) {
       };
     });
 
-    // Pager + sort
+    /*Pager + sort*/
     (function(){
       const PER_PAGE     = 6;
       const VIRTUAL_MAX  = 111;

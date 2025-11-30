@@ -1,24 +1,19 @@
 <?php
-// --- ENABLE ERRORS FOR DEBUGGING (sementara) ---
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+error_reporting(E_ERROR | E_PARSE);
 session_start();
 $nama_user = $_SESSION['nama_user'] ?? 'Administrator';
 $role_user = $_SESSION['role_user'] ?? 'Admin';
 
-/* ambil data riil dari database */
+/* Koneksi database */
 include '../koneksi.php';
 
-// pastikan $conn ada
+/* Pastikan koneksi database tersedia */
 if (!isset($conn) || !$conn) {
-    error_log('[dashboard.php] Database connection not available');
     $conn = null;
 }
 
-// Ambil tema dari database
-$current_theme = 'light'; // default
+/* Ambil tema dari database (light/dark mode) */
+$current_theme = 'light'; /*default*/
 if ($conn) {
     $sql = "SELECT tema FROM pengaturan LIMIT 1";
     $res = mysqli_query($conn, $sql);
@@ -28,34 +23,36 @@ if ($conn) {
 }
 
 if (!$conn) {
-	// fallback ke 0 jika koneksi gagal
+	/* Fallback jika koneksi database gagal */
 	$total_karyawan = 0;
 	$hadir_hari_ini = 0;
 	$izin_sakit = 0;
 	$belum_absen = 0;
 } else {
-	// total karyawan (role user)
+	/* Query statistik dashboard */
+	
+	/* Hitung total karyawan (role user) */
 	$stmt = $conn->prepare("SELECT COUNT(*) as total FROM users WHERE role='user'");
 	$stmt->execute();
 	$res = $stmt->get_result();
 	$total_karyawan = intval($res->fetch_assoc()['total'] ?? 0);
 	$stmt->close();
 
-	// hadir hari ini (Hadir atau Selesai)
+	/* Hitung yang hadir hari ini (Hadir atau Selesai) */
 	$stmt = $conn->prepare("SELECT COUNT(*) as total FROM absensi WHERE tanggal = CURDATE() AND status IN ('Hadir','Selesai')");
 	$stmt->execute();
 	$res = $stmt->get_result();
 	$hadir_hari_ini = intval($res->fetch_assoc()['total'] ?? 0);
 	$stmt->close();
 
-	// izin hari ini
+	/* Hitung izin hari ini */
 	$stmt = $conn->prepare("SELECT COUNT(*) as total FROM izin WHERE tanggal = CURDATE()");
 	$stmt->execute();
 	$res = $stmt->get_result();
 	$izin_today = intval($res->fetch_assoc()['total'] ?? 0);
 	$stmt->close();
 
-	// sakit hari ini
+	/* Hitung sakit hari ini */
 	$stmt = $conn->prepare("SELECT COUNT(*) as total FROM sakit WHERE tanggal = CURDATE()");
 	$stmt->execute();
 	$res = $stmt->get_result();
@@ -64,11 +61,11 @@ if (!$conn) {
 
 	$izin_sakit = $izin_today + $sakit_today;
 
-	// belum absen = total - (hadir + izin/sakit), minimal 0
+	/* Hitung yang belum absen (total - hadir - izin/sakit) */
 	$belum_absen = max(0, $total_karyawan - ($hadir_hari_ini + $izin_sakit));
 }
 
-// Ambil 10 aktivitas terakhir dari beberapa tabel (guarded by $conn)
+/* Ambil 10 aktivitas terbaru untuk ditampilkan di dashboard */
 $aktivitas_list = [];
 
 if ($conn) {
@@ -126,26 +123,24 @@ if ($conn) {
     $res = mysqli_query($conn, $sql_aktivitas);
     if ($res) {
         while ($r = mysqli_fetch_assoc($res)) {
-            // pilih emoji berdasarkan tipe/jenis
+            /* Pilih emoji berdasarkan jenis aktivitas */
             $emoji = '🔔';
             if ($r['jenis'] === 'absensi') $emoji = '✅';
             elseif ($r['jenis'] === 'izin') $emoji = '📩';
             elseif ($r['jenis'] === 'sakit') $emoji = '🤒';
             elseif ($r['jenis'] === 'checkout') $emoji = '🏃';
 
-            // format waktu tampil (HH:MM)
+            /* Format waktu untuk ditampilkan (HH:MM) */
             $waktu_display = '';
             if (!empty($r['waktu']) && strtotime($r['waktu']) !== false) {
                 $waktu_display = date('H:i', strtotime($r['waktu']));
             }
 
-            // bangun deskripsi yang lebih informatif
             if ($r['jenis'] === 'absensi') {
                 $deskripsi = trim($r['nama_lengkap'] . ' melakukan ' . strtolower($r['judul']) . ' pada ' . $waktu_display);
             } elseif ($r['jenis'] === 'checkout') {
                 $deskripsi = trim($r['nama_lengkap'] . ' meminta checkout: ' . ($r['deskripsi'] ?: 'tanpa keterangan'));
             } else {
-                // izin / sakit
                 $deskripsi = trim($r['nama_lengkap'] . ' - ' . ($r['deskripsi'] ?: $r['judul']));
             }
 
@@ -157,11 +152,9 @@ if ($conn) {
             ];
         }
     } else {
-        error_log('[dashboard.php] gagal menjalankan query aktivitas: ' . mysqli_error($conn));
         $aktivitas_list = [];
     }
 } else {
-    // fallback: kosongkan daftar aktivitas agar halaman tetap tampil
     $aktivitas_list = [];
 }
 ?>
@@ -305,8 +298,9 @@ if ($conn) {
     </main>
   </div>
 
-  <!-- JS -->
+  <!--JAVASCRIPT - Sidebar & Interaksi-->
   <script>
+  /* Toggle sidebar untuk mobile */
   document.addEventListener('DOMContentLoaded', function () {
     var hamburger = document.getElementById('hamburger');
     var sidebar = document.getElementById('sidebar');
